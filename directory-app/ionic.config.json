@@ -1,0 +1,7 @@
+{
+  "name": "directory-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
