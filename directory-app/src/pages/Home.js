@@ -14,7 +14,7 @@ export default function Home() {
   function get_dir() {
     axios({
       method: 'get',
-      url: 'http://localhost:8000/',
+      url: 'http://192.168.0.18:8000/',
     })
       .then(response => {
         setDir(response.data)
@@ -37,7 +37,11 @@ export default function Home() {
           dir.map((item, index) => {
             const dir_split = item.Name.split("\\")
             const folder_name = dir_split[dir_split.length - 1]
-            return <FolderDisplay name={folder_name} dir={item.Name} isDir={item.IsDir} />
+            return <FolderDisplay name={folder_name}
+              dir={item.Name}
+              isDir={item.IsDir}
+              size={item.Size}
+            />
           })
         }
       </ul>
