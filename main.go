@@ -78,6 +78,36 @@ func downloadPostHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, file)
 }
 
+func uploadPostHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("upload post")
+	w.Header().Set("Content-Type", "application/x-msdownload")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusCreated)
+
+	r.ParseMultipartForm(1000)
+
+	file, handler, err := r.FormFile("myFile")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v ", handler.Filename)
+	fmt.Printf("File Size: %+v ", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	path := rootDir() + "\\golang12\\static\\" + handler.Filename
+	resFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer resFile.Close()
+
+	io.Copy(resFile, file)
+	json.NewEncoder(w).Encode("ok")
+}
+
 func rootDir() string {
 	_, b, _, _ := runtime.Caller(0)
 	d := path.Join(path.Dir(b))
@@ -124,6 +154,7 @@ func main() {
 	r.HandleFunc("/", indexGetHandler).Methods("GET")
 	r.HandleFunc("/", indexPostHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/download/", downloadPostHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/upload/", uploadPostHandler).Methods("POST", "OPTIONS")
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	http.Handle("/", r)

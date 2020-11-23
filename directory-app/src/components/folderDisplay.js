@@ -11,6 +11,7 @@ export default function FolderDisplay(props) {
     const [subDir, setSubDir] = useState([])
     const [showLoad, setShowLoad] = useState(false)
     const [downlaodProgress, setDownloadProgress] = useState(0)
+    const [uploadProgress, setUploadProgress] = useState(0)
 
     function post_dir(d) {
         axios({
@@ -69,14 +70,46 @@ export default function FolderDisplay(props) {
         download_dir(props.dir, props.name)
     }
 
+    function uploadEvent() {
+        const inputId = "fileInput" + props.dir
+        console.log(inputId)
+        document.getElementById(inputId).click()
+    }
+
+    function fileChange() {
+        const inputId = "fileInput" + props.dir
+        const file = document.getElementById(inputId).files[0]
+        let formdata = new FormData();
+        formdata.append("myFile", file);
+
+        axios({
+            method: 'post',
+            url: 'http://192.168.0.18:8000/upload/',
+            data: formdata,
+            onUploadProgress: progressEvent => {
+                const p = parseInt(progressEvent.loaded / progressEvent.total * 99);
+                setUploadProgress(p)
+            },
+        })
+            .then(res => {
+                console.log(res.data);
+                if (res.data === 'ok') {
+                    setUploadProgress(100)
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }
+
     const folder_icon = open ? <IonIcon icon={folderOpenOutline} /> : <IonIcon icon={folder} />
 
     const sub_folder_list = subDir.map((item, index) => {
         const dir_split = item.Name.split("\\")
         const folder_name = dir_split[dir_split.length - 1].replace(props.name, '')
         const dir_name = item.Name.replace(folder_name, '') + '\\' + folder_name
-        return <li>
-            <FolderDisplay name={folder_name} dir={dir_name} isDir={item.IsDir} size={item.Size} />
+        return <li key={dir_name}>
+            <FolderDisplay name={folder_name} dir={dir_name} isDir={item.IsDir} size={item.Size} key={item.Name} />
         </li>
     })
 
@@ -85,11 +118,13 @@ export default function FolderDisplay(props) {
             <span onClick={() => clickEvent()}>
                 {props.isDir ? folder_icon : <IonIcon icon={documentOutline} />}{' '}
                 {props.name}{' '}
-                {showLoad && props.isDir ? <IonIcon icon={cloudUploadOutline} /> : null}{' '}
+                {showLoad && props.isDir ? <IonIcon icon={cloudUploadOutline} onClick={() => uploadEvent()} /> : null}{' '}
                 {showLoad && !props.isDir ? <IonIcon icon={cloudDownloadOutline} onClick={() => downloadEvent()} /> : null}{' '}
                 {downlaodProgress != 0 ? downlaodProgress + '%' : null}
+                {uploadProgress != 0 ? uploadProgress + '%' : null}
+                <input type="file" id={"fileInput" + props.dir} style={{ display: "none" }} onChange={() => fileChange()}></input>
             </span>
-            {open ? <ul class="no-bullets">
+            {open ? <ul className="no-bullets">
                 {sub_folder_list}
             </ul> : null}
         </li>

@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div style={{ overflowY: 'scroll', height: '100%' }}>
       <h1>Server</h1>
-      <ul class="no-bullets">
+      <ul className="no-bullets">
         {
           dir.map((item, index) => {
             const dir_split = item.Name.split("\\")
@@ -41,6 +41,7 @@ export default function Home() {
               dir={item.Name}
               isDir={item.IsDir}
               size={item.Size}
+              key={item.Name}
             />
           })
         }
