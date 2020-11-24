@@ -78,9 +78,15 @@ export default function FolderDisplay(props) {
 
     function fileChange() {
         const inputId = "fileInput" + props.dir
-        const file = document.getElementById(inputId).files[0]
+        const files = document.getElementById(inputId).files
+        let i;
         let formdata = new FormData();
-        formdata.append("myFile", file);
+
+        for (i = 0; i < files.length; i++) {
+            formdata.append("myFile", files[i]);
+        }
+
+        formdata.append("dir", props.dir)
 
         axios({
             method: 'post',
@@ -122,7 +128,7 @@ export default function FolderDisplay(props) {
                 {showLoad && !props.isDir ? <IonIcon icon={cloudDownloadOutline} onClick={() => downloadEvent()} /> : null}{' '}
                 {downlaodProgress != 0 ? downlaodProgress + '%' : null}
                 {uploadProgress != 0 ? uploadProgress + '%' : null}
-                <input type="file" id={"fileInput" + props.dir} style={{ display: "none" }} onChange={() => fileChange()}></input>
+                <input type="file" multiple id={"fileInput" + props.dir} style={{ display: "none" }} onChange={() => fileChange()}></input>
             </span>
             {open ? <ul className="no-bullets">
                 {sub_folder_list}

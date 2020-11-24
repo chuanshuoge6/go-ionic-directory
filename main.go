@@ -86,25 +86,32 @@ func uploadPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(1000)
 
-	file, handler, err := r.FormFile("myFile")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
-	fmt.Printf("Uploaded File: %+v ", handler.Filename)
-	fmt.Printf("File Size: %+v ", handler.Size)
-	fmt.Printf("MIME Header: %+v\n", handler.Header)
+	files := r.MultipartForm.File["myFile"]
+	dir := r.PostForm.Get("dir")
 
-	path := rootDir() + "\\golang12\\static\\" + handler.Filename
-	resFile, err := os.Create(path)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer resFile.Close()
+	for i, header := range files {
+		file, err := files[i].Open()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
 
-	io.Copy(resFile, file)
+		fmt.Printf("Uploaded File: %+v ", header.Filename)
+		fmt.Printf("File Size: %+v\n", header.Size)
+
+		path := dir + "\\" + header.Filename
+		resFile, err := os.Create(path)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer resFile.Close()
+
+		io.Copy(resFile, file)
+
+	}
+
 	json.NewEncoder(w).Encode("ok")
 }
 
